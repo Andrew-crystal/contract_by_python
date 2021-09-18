@@ -11,16 +11,16 @@ lending_pool = "0xd05e3E715d945B59290df0ae8eF85c1BdB684744"
 
 def main():
     if 'fork' in network.show_active():
-        acct = accounts.add(config['wallets']['from_key'])
-        flashloan = input('Enter deployed flashloan address')
-    else:
         acct = accounts.at('0xe7804c37c13166fF0b37F5aE0BB07A3aEbb6e245', force=True) # random whale
-        flashloan = None
+        flashloan_addr = None
+    else:
+        acct = accounts.add(config['wallets']['from_key'])
+        flashloan_addr = input('Enter deployed flashloan address')
 
-    flashloan(acct, 'dai', 'usdc', flashloan)
+    flashloan(acct, 'dai', 'usdc', flashloan_addr)
 
 
-def flashloan(acct, from_token_name, to_token_name, flashloan_address: None):
+def flashloan(acct, from_token_name, to_token_name, flashloan_address):
     print(network.show_active())
     from_token = tokens[from_token_name]
     to_token = tokens[to_token_name]
