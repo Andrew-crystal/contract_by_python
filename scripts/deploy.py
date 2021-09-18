@@ -9,3 +9,4 @@ def main():
             lending_pool,
             {"from": acct}
     )
+    return flashloan
