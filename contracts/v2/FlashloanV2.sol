@@ -3,21 +3,24 @@ pragma solidity ^0.6.6;
 import "./aave/FlashLoanReceiverBaseV2.sol";
 import "../../interfaces/v2/ILendingPoolAddressesProviderV2.sol";
 import "../../interfaces/v2/ILendingPoolV2.sol";
+import "../../interfaces/IUniswapRouterV2.sol";
+import "../../interfaces/curve/StableSwap.sol";
 
 contract FlashloanV2 is FlashLoanReceiverBaseV2, Withdrawable {
+    address public constant ROUTER = 0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff;
+    address public constant ATRIV1 = 0x3FCD5De6A9fC8A99995c406c77DDa3eD7E406f81; // v1
+    address public constant ATRIV3 = 0x1d8b86e3D88cDb2d34688e87E72F388Cb541B7C8; // v3
+    address public constant LENDING_POOL_ADDRESS = 0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf;
+    address public fromToken;
+    uint256 public fromTokenInd;
+    address public toToken;
+    uint256 public toTokenInd;
+    uint public owed;
+    uint public bal;
+    bool tokensSet = false; 
 
     constructor(address _addressProvider) FlashLoanReceiverBaseV2(_addressProvider) public {}
 
-    /**
-     * @dev This function must be called only be the LENDING_POOL and takes care of repaying
-     * active debt positions, migrating collateral and incurring new V2 debt token debt.
-     *
-     * @param assets The array of flash loaned assets used to repay debts.
-     * @param amounts The array of flash loaned asset amounts used to repay debts.
-     * @param premiums The array of premiums incurred as additional debts.
-     * @param initiator The address that initiated the flash loan, unused.
-     * @param params The byte array containing, in this case, the arrays of aTokens and aTokenAmounts.
-     */
     function executeOperation(
         address[] calldata assets,
         uint256[] calldata amounts,
@@ -30,15 +33,14 @@ contract FlashloanV2 is FlashLoanReceiverBaseV2, Withdrawable {
         returns (bool)
     {
         
-        //
-        // This contract now has the funds requested.
-        // Your logic goes here.
-        //
+        require(tokensSet);
+        owed = amounts[0].add(premiums[0]);
+        swap_curve(ATRIV3, amounts[0]);
+        swap_quickswap(IERC20(toToken).balanceOf(address(this)));
+        bal = IERC20(assets[0]).balanceOf(address(this));
+        require(bal > owed, "Did not make profit, reverting...");
         
-        // At the end of your logic above, this contract owes
-        // the flashloaned amounts + premiums.
-        // Therefore ensure your contract has enough to repay
-        // these amounts.
+
         
         // Approve the LendingPool contract allowance to *pull* the owed amount
         for (uint i = 0; i < assets.length; i++) {
@@ -48,6 +50,32 @@ contract FlashloanV2 is FlashLoanReceiverBaseV2, Withdrawable {
         
         return true;
     }
+
+
+    function swap_quickswap(uint256 amount) internal {
+        address[] memory path;
+        path = new address[](2);
+        path[0] = toToken;
+        // path[1] = WMATIC;
+        path[1] = fromToken;
+        IERC20(toToken).approve(ROUTER, IERC20(toToken).balanceOf(address(this)) * 2);
+        IUniswapRouterV2(ROUTER).swapExactTokensForTokens(amount, 1, path, address(this), block.timestamp + 99999999);
+    }
+
+    function swap_curve(address from_pool, address to_pool, uint256 amount) internal {
+        IERC20(fromToken).approve(from_pool, IERC20(fromToken).balanceOf(address(this)) * 2);
+        StableSwap(from_pool).exchange_underlying(fromTokenInd, toTokenInd, amount, 1);
+
+        IERC20(toToken).approve(to_pool, IERC20(toToken).balanceOf(address(this)) * 2);
+        StableSwap(to_pool).exchange_underlying(toTokenInd, fromTokenInd, IERC20(toToken).balanceOf(address(this)), 1);
+    }
+
+    function swap_curve(address from_pool, uint256 amount) internal {
+        IERC20(fromToken).approve(from_pool, IERC20(fromToken).balanceOf(address(this)) * 2);
+        StableSwap(from_pool).exchange_underlying(fromTokenInd, toTokenInd, amount, 1);
+
+    }
+
 
     function _flashloan(address[] memory assets, uint256[] memory amounts) internal {
         address receiverAddress = address(this);
@@ -74,19 +102,11 @@ contract FlashloanV2 is FlashLoanReceiverBaseV2, Withdrawable {
         );
     }
 
-    /*
-     *  Flash multiple assets 
-     */
-    function flashloan(address[] memory assets, uint256[] memory amounts) public onlyOwner {
-        _flashloan(assets, amounts);
-    }
 
-    /*
-     *  Flash loan 1000000000000000000 wei (1 ether) worth of `_asset`
-     */
-    function flashloan(address _asset) public onlyOwner {
+    function flashloan(address _asset, uint _amount) public onlyOwner {
+        fromToken = _asset;
         bytes memory data = "";
-        uint amount = 1 ether;
+        uint amount = _amount;
 
         address[] memory assets = new address[](1);
         assets[0] = _asset;
@@ -95,5 +115,17 @@ contract FlashloanV2 is FlashLoanReceiverBaseV2, Withdrawable {
         amounts[0] = amount;
 
         _flashloan(assets, amounts);
+    }
+
+    function setTokens(address from, uint256 fromInd, address to, uint256 toInd) public onlyOwner {
+        fromToken = from;
+        fromTokenInd = fromInd;
+        toToken = to;
+        toTokenInd = toInd;
+        tokensSet = true;
+    }
+
+    function getProfit() public onlyOwner {
+        IERC20(fromToken).transfer(msg.sender, IERC20(fromToken).balanceOf(address(this)));
     }
 }
