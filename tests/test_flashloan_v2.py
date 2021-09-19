@@ -2,6 +2,8 @@
 # contract. this ensures that the tests pass with the base Flashloan implementation,
 # i.e. one that does not implement any custom logic.
 from scripts.tokens import tokens, curve_tokens
+import brownie
+from web3 import Web3
 
 def test_set_tokens(acct, flashloan_v2):
     flashloan_v2.setTokens(
@@ -21,11 +23,32 @@ def test_dai_flashloan(acct, DAI, WMATIC, router, flashloan_v2):
 
 
     # purchase DAI on uniswap
-    amount = 10 * 10**18
-    router.swapExactETHForTokens(0, [WMATIC.address, DAI.address], acct.address, 9999999999999999, {"from": acct, "value": amount})
-
+    amount_to_loan = Web3.toWei(0.01, 'ether')
+    fee = int(amount_to_loan * 0.0009)
+    router.swapExactETHForTokens(0, [WMATIC.address, DAI.address], acct.address, 9999999999999999, {"from": acct, "value": Web3.toWei(100000000, 'ether')})
     # transfer DAI to the flashloan contract
     balance = DAI.balanceOf(acct)
-    DAI.transfer(flashloan_v2, balance, {"from": acct})
-    amount = 100 * 10**18
-    flashloan_v2.flashloan(amount, {"from": acct})
+
+    assert balance > fee
+
+    DAI.transfer(flashloan_v2, fee, {"from": acct})
+    assert DAI.balanceOf(flashloan_v2.address) == fee
+    # flashloan_v2.flashloan(amount_to_loan, {"from": acct})
+
+def test_returned_funds(acct, DAI, flashloan_v2):
+    assert DAI.balanceOf(flashloan_v2.address) > 0
+
+    before = DAI.balanceOf(acct.address)
+    flashloan_v2.getProfit(DAI.address, {'from': acct})
+
+    assert DAI.balanceOf(acct.address) > before
+
+
+def test_under_collateralized_loan(acct, DAI, flashloan_v2):
+    assert DAI.balanceOf(acct) >= 1
+    assert DAI.balanceOf(flashloan_v2.address) == 0
+    # Transfer 1 wei worth of DAI and initiate expensive flashloan
+    DAI.transfer(flashloan_v2, 1, {"from": acct})
+    amount = 1000000 * 10**18
+    with brownie.reverts():
+        flashloan_v2.flashloan(amount, {"from": acct})

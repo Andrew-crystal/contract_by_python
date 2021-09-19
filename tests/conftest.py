@@ -19,19 +19,18 @@ def aave_lending_pool_v2(Contract):
     """
     yield Contract("0xd05e3E715d945B59290df0ae8eF85c1BdB684744")
 
+@pytest.fixture(scope="module")
+def acct(accounts):
+    yield accounts.at('0xe7804c37c13166fF0b37F5aE0BB07A3aEbb6e245', force=True)
+
 
 @pytest.fixture(scope="module")
-def flashloan_v2(FlashloanV2, aave_lending_pool_v2, accounts):
+def flashloan_v2(FlashloanV2, aave_lending_pool_v2, acct):
     """
     Deploy a `Flashloan` contract from `web3.eth.accounts[0]` and yields the
     generated object.
     """
-    yield FlashloanV2.deploy(aave_lending_pool_v2, {"from": accounts[0]})
-    
-
-@pytest.fixture(scope="module")
-def acct(accounts):
-    return accounts[0]
+    yield FlashloanV2.deploy(aave_lending_pool_v2, {"from": acct})
 
 @pytest.fixture(scope="module")
 def WMATIC(Contract):

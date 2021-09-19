@@ -5,7 +5,7 @@ import "../../interfaces/v2/ILendingPoolAddressesProviderV2.sol";
 import "../../interfaces/v2/ILendingPoolV2.sol";
 import "../../interfaces/IUniswapRouterV2.sol";
 import "../../interfaces/curve/StableSwap.sol";
-
+// import "../utils/Withdrawable.sol"
 contract FlashloanV2 is FlashLoanReceiverBaseV2, Withdrawable {
     address public constant ROUTER = 0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff;
     address public constant ATRIV1 = 0x3FCD5De6A9fC8A99995c406c77DDa3eD7E406f81; // v1
@@ -33,7 +33,7 @@ contract FlashloanV2 is FlashLoanReceiverBaseV2, Withdrawable {
         returns (bool)
     {
         
-        require(tokensSet);
+        require(tokensSet, "Tokens not set");
         owed = amounts[0].add(premiums[0]);
         swap_curve(ATRIV3, amounts[0]);
         swap_quickswap(IERC20(toToken).balanceOf(address(this)));
@@ -124,7 +124,8 @@ contract FlashloanV2 is FlashLoanReceiverBaseV2, Withdrawable {
         tokensSet = true;
     }
 
-    function getProfit() public onlyOwner {
-        IERC20(fromToken).transfer(msg.sender, IERC20(fromToken).balanceOf(address(this)));
+    function getProfit(address _asset) public onlyOwner {
+        // IERC20(fromToken).transfer(msg.sender, IERC20(fromToken).balanceOf(address(this)));
+        withdraw(_asset);
     }
 }
