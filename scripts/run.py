@@ -59,7 +59,7 @@ def flashloan(acct, from_token_name, to_token_name, flashloan_address):
     starting_contract_balance = balanceOf(from_token, flashloan.address)
     print("Executing Flashloan...")
 
-    tx = flashloan.flashloan(from_token, flashloan_amount, {"from": acct})
+    tx = flashloan.flashloan(flashloan_amount, {"from": acct})
 
     contract_balance  = balanceOf(from_token, flashloan.address)
     profit = Web3.fromWei(contract_balance, "ether") - Web3.fromWei(starting_contract_balance, "ether")

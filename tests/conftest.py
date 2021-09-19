@@ -3,7 +3,7 @@ from scripts.tokens import tokens
 
 
 @pytest.fixture(autouse=True)
-def setup(fn_isolation):
+def setup(module_isolation):
     """
     Isolation setup fixture.
 
@@ -27,6 +27,15 @@ def flashloan_v2(FlashloanV2, aave_lending_pool_v2, accounts):
     generated object.
     """
     yield FlashloanV2.deploy(aave_lending_pool_v2, {"from": accounts[0]})
+    
+
+@pytest.fixture(scope="module")
+def acct(accounts):
+    return accounts[0]
+
+@pytest.fixture(scope="module")
+def WMATIC(Contract):
+    yield Contract(tokens['wmatic'])
 
 
 @pytest.fixture(scope="module")
@@ -37,3 +46,7 @@ def USDC(Contract):
 @pytest.fixture(scope="module")
 def DAI(Contract):
     yield Contract(tokens['usdc'])
+
+@pytest.fixture(scope="module")
+def router(interface):
+    yield interface.IUniswapRouterV2("0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff")

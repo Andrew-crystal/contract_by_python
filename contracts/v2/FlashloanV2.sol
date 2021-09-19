@@ -103,13 +103,12 @@ contract FlashloanV2 is FlashLoanReceiverBaseV2, Withdrawable {
     }
 
 
-    function flashloan(address _asset, uint _amount) public onlyOwner {
-        fromToken = _asset;
+    function flashloan(uint _amount) public onlyOwner {
         bytes memory data = "";
         uint amount = _amount;
 
         address[] memory assets = new address[](1);
-        assets[0] = _asset;
+        assets[0] = fromToken;
 
         uint256[] memory amounts = new uint256[](1);
         amounts[0] = amount;
