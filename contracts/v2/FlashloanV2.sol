@@ -17,7 +17,7 @@ contract FlashloanV2 is FlashLoanReceiverBaseV2, Withdrawable {
     uint256 public toTokenInd;
     uint public owed;
     uint public bal;
-    bool tokensSet = false; 
+    bool public tokensSet = false; 
 
     constructor(address _addressProvider) FlashLoanReceiverBaseV2(_addressProvider) public {}
 
@@ -38,7 +38,7 @@ contract FlashloanV2 is FlashLoanReceiverBaseV2, Withdrawable {
         swap_curve(ATRIV3, amounts[0]);
         swap_quickswap(IERC20(toToken).balanceOf(address(this)));
         bal = IERC20(assets[0]).balanceOf(address(this));
-        require(bal > owed, "Did not make profit, reverting...");
+        // require(bal > owed, "Did not make profit, reverting...");
         
 
         
