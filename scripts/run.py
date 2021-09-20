@@ -28,7 +28,7 @@ def flashloan(acct, from_token_name, to_token_name, flashloan_address):
     to_curve_token = curve_tokens[to_token_name]
     
     if flashloan_address:
-        flashloan_address = Contract(flashloan_address)
+        flashloan = Contract(flashloan_address)
         
     else:
         flashloan = FlashloanV2.deploy(
@@ -47,7 +47,6 @@ def flashloan(acct, from_token_name, to_token_name, flashloan_address):
     swap_eth_for_erc20(from_token, fee_payment, acct)
     print(f'Received {balanceOf(from_token, acct.address)} {from_token_name}')
    
-    flashloan = FlashloanV2[len(FlashloanV2) - 1]
     bal = balanceOf(from_token, flashloan)
 
     if bal < fee_payment:
