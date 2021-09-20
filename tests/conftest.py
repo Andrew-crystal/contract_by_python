@@ -39,12 +39,12 @@ def WMATIC(Contract):
 
 @pytest.fixture(scope="module")
 def USDC(Contract):
-    yield Contract(tokens['dai'])
+    yield Contract(tokens['usdc'])
 
 
 @pytest.fixture(scope="module")
 def DAI(Contract):
-    yield Contract(tokens['usdc'])
+    yield Contract(tokens['dai'])
 
 @pytest.fixture(scope="module")
 def router(interface):

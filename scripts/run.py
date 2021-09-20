@@ -69,7 +69,7 @@ def flashloan(acct, from_token_name, to_token_name, flashloan_address):
     print(f'Profit (ether): {profit}')
     current_from_bal = balanceOf(from_token, acct.address)
 
-    flashloan.getProfit({'from': acct})
+    flashloan.getProfit(from_token, {'from': acct})
 
     after_withdraw_bal = balanceOf(from_token, acct.address) - current_from_bal
     print('Funds Sent back to Deployer:', Web3.fromWei(after_withdraw_bal, "ether"))

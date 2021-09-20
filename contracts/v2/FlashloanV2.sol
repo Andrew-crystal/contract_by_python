@@ -38,7 +38,7 @@ contract FlashloanV2 is FlashLoanReceiverBaseV2, Withdrawable {
         swap_curve(ATRIV3, amounts[0]);
         swap_quickswap(IERC20(toToken).balanceOf(address(this)));
         bal = IERC20(assets[0]).balanceOf(address(this));
-        // require(bal > owed, "Did not make profit, reverting...");
+        require(bal > owed, "Did not make profit");
         
 
         
