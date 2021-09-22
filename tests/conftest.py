@@ -1,5 +1,5 @@
 import pytest
-from scripts.tokens import tokens
+from scripts.tokens import tokens, curve_tokens
 
 
 @pytest.fixture(autouse=True)
@@ -19,6 +19,7 @@ def aave_lending_pool_v2(Contract):
     """
     yield Contract("0xd05e3E715d945B59290df0ae8eF85c1BdB684744")
 
+
 @pytest.fixture(scope="module")
 def acct(accounts):
     yield accounts.at('0xe7804c37c13166fF0b37F5aE0BB07A3aEbb6e245', force=True)
@@ -31,6 +32,17 @@ def flashloan_v2(FlashloanV2, aave_lending_pool_v2, acct):
     generated object.
     """
     yield FlashloanV2.deploy(aave_lending_pool_v2, {"from": acct})
+
+@pytest.fixture(scope="module")
+def set_tokens(acct, flashloan_v2):
+    flashloan_v2.setTokens(
+        tokens['dai'],
+        curve_tokens['dai'],
+        tokens['usdc'],
+        curve_tokens['usdc'],
+        {'from': acct}
+    )
+    assert flashloan_v2.tokensSet()
 
 @pytest.fixture(scope="module")
 def WMATIC(Contract):
