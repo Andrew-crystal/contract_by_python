@@ -4,9 +4,10 @@
 from scripts.tokens import tokens, curve_tokens
 import brownie
 from web3 import Web3
+from scripts.utils import swap_eth_for_erc20
 
 
-def test_collateralized_flashloan(acct, DAI, WMATIC, router, flashloan_v2, set_tokens):
+def test_collateralized_flashloan(acct, DAI, flashloan_v2, set_tokens):
     """
     Test a flashloan that borrows DAI.
 
@@ -15,7 +16,7 @@ def test_collateralized_flashloan(acct, DAI, WMATIC, router, flashloan_v2, set_t
 
     amount_to_loan = Web3.toWei(100, 'ether')
     fee = int(amount_to_loan * 0.0009)
-    router.swapExactETHForTokens(0, [WMATIC.address, DAI.address], acct.address, 9999999999999999, {"from": acct, "value": fee * 1.1})
+    swap_eth_for_erc20(DAI, fee * 1.1, acct)
 
     DAI.transfer(flashloan_v2, fee, {"from": acct})
     

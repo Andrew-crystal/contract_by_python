@@ -57,7 +57,3 @@ def USDC(Contract):
 @pytest.fixture(scope="module")
 def DAI(Contract):
     yield Contract(tokens['dai'])
-
-@pytest.fixture(scope="module")
-def router(interface):
-    yield interface.IUniswapRouterV2("0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff")
