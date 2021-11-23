@@ -15,8 +15,8 @@ contract FlashloanV2 is FlashLoanReceiverBaseV2, Withdrawable {
     uint256 public fromTokenInd;
     address public toToken;
     uint256 public toTokenInd;
-    uint public owed;
-    uint public bal;
+    uint256 public owed;
+    uint256 public bal;
     bool public tokensSet = false; 
 
     constructor(address _addressProvider) FlashLoanReceiverBaseV2(_addressProvider) public {}
@@ -32,11 +32,13 @@ contract FlashloanV2 is FlashLoanReceiverBaseV2, Withdrawable {
         override
         returns (bool)
     {
-        
+    
         require(tokensSet, "Tokens not set");
         owed = amounts[0].add(premiums[0]);
-        swap_curve(ATRIV3, amounts[0]);
+
+        swap_curve(ATRIV3, IERC20(fromToken).balanceOf(address(this)));
         swap_quickswap(IERC20(toToken).balanceOf(address(this)));
+
         bal = IERC20(assets[0]).balanceOf(address(this));
         require(bal > owed, "Did not make profit");
         
@@ -52,28 +54,23 @@ contract FlashloanV2 is FlashLoanReceiverBaseV2, Withdrawable {
     }
 
 
-    function swap_quickswap(uint256 amount) internal {
+    function swap_quickswap(uint256 amount) public {
         address[] memory path;
         path = new address[](2);
         path[0] = toToken;
         // path[1] = WMATIC;
         path[1] = fromToken;
-        IERC20(toToken).approve(ROUTER, IERC20(toToken).balanceOf(address(this)) * 2);
         IUniswapRouterV2(ROUTER).swapExactTokensForTokens(amount, 1, path, address(this), block.timestamp + 99999999);
     }
 
-    function swap_curve(address from_pool, address to_pool, uint256 amount) internal {
-        IERC20(fromToken).approve(from_pool, IERC20(fromToken).balanceOf(address(this)) * 2);
+    function swap_curve(address from_pool, address to_pool, uint256 amount) public {
         StableSwap(from_pool).exchange_underlying(fromTokenInd, toTokenInd, amount, 1);
 
-        IERC20(toToken).approve(to_pool, IERC20(toToken).balanceOf(address(this)) * 2);
         StableSwap(to_pool).exchange_underlying(toTokenInd, fromTokenInd, IERC20(toToken).balanceOf(address(this)), 1);
     }
 
-    function swap_curve(address from_pool, uint256 amount) internal {
-        IERC20(fromToken).approve(from_pool, IERC20(fromToken).balanceOf(address(this)) * 2);
+    function swap_curve(address from_pool, uint256 amount) public {
         StableSwap(from_pool).exchange_underlying(fromTokenInd, toTokenInd, amount, 1);
-
     }
 
 
@@ -122,6 +119,10 @@ contract FlashloanV2 is FlashLoanReceiverBaseV2, Withdrawable {
         toToken = to;
         toTokenInd = toInd;
         tokensSet = true;
+        IERC20(toToken).approve(ROUTER, type(uint256).max);
+        // IERC20(toToken).approve(ATRIV3, type(uint256).max);
+        // IERC20(fromToken).approve(ROUTER, type(uint256).max);
+        IERC20(fromToken).approve(ATRIV3, type(uint256).max);
     }
 
     function getProfit(address _asset) public onlyOwner {

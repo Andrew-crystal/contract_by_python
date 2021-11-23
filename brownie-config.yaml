@@ -12,7 +12,13 @@ compiler:
       - "@openzeppelin=OpenZeppelin/openzeppelin-contracts@3.0.0"
 networks:
   default: polygon-main-fork
-  
+  development:
+    cmd_settings:
+      default_balance: 1000000000000
+  polygon-main-fork:
+    cmd_settings:
+      default_balance: 1000000000000
+
 wallets:
   from_key: ${PRIVATE_KEY}
   from_mnemonic: ${MNEMONIC}
