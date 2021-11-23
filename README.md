@@ -1,20 +1,28 @@
+# Polygon Flashloan Fork Strategy
+
+This flashloan takes advantage of forking the Polygon mainnet at at the current block, performing arbitrage, and if a profitable opportunity is found, the strategy will switch back to mainnet and execute a real flashloan.
+
+This means finding and executing arbitrage opportunities can be very easy and cheap, as all of the brute force testing is done on a simulated network and the cost to execute flashloans on Polygon is very cheap
+
+Right now the the strategy will test all token pair combinations on the Polygon Curve Market and perform Arbitrage between Curve's AtriCrypto Pool and Quickswap at every block
+
 # Aave Flash Loan Brownie Mix
 
 ![Aave Banner](box-img-sm.png)
 
-*Adapted from [aave/flashloan-box](https://github.com/aave/flashloan-box) by [mrdavey](https://github.com/mrdavey/).*
+_Adapted from [aave/flashloan-box](https://github.com/aave/flashloan-box) by [mrdavey](https://github.com/mrdavey/)._
 
 This Brownie mix comes with everything you need to start [developing on flash loans](https://docs.aave.com/developers/guides/flash-loans).
 
 This mix is configured for use with [Ganache](https://github.com/trufflesuite/ganache-cli) on a [forked mainnet](https://eth-brownie.readthedocs.io/en/stable/network-management.html#using-a-forked-development-network).
 
-*It supports both Aave V1 and V2.*
+_It supports both Aave V1 and V2._
 
 ## Installation and Setup
 
 1. [Install Brownie](https://eth-brownie.readthedocs.io/en/stable/install.html) & [Ganache-CLI](https://github.com/trufflesuite/ganache-cli), if you haven't already.
 
-2. Sign up for [Infura](https://infura.io/) and generate an API key. Store it in the `WEB3_INFURA_PROJECT_ID` environment variable. You can [learn more about environment variables here](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html). If you're unfamiliar with environment variables you can just add all these commands to your `.env` file and run `source .env` when you're done. 
+2. Sign up for [Infura](https://infura.io/) and generate an API key. Store it in the `WEB3_INFURA_PROJECT_ID` environment variable. You can [learn more about environment variables here](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html). If you're unfamiliar with environment variables you can just add all these commands to your `.env` file and run `source .env` when you're done.
 
 ```bash
 export WEB3_INFURA_PROJECT_ID=YourProjectID
@@ -32,25 +40,25 @@ export ETHERSCAN_TOKEN=YourApiToken
 brownie bake aave-flashloan
 ```
 
-5. Add your `PRIVATE_KEY` environment variable, with [a private key from you wallet.](https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-Export-an-Account-Private-Key). *Note: If using metamask, you'll have to add a `0x` to the start of your private key) 
+5. Add your `PRIVATE_KEY` environment variable, with [a private key from you wallet.](https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-Export-an-Account-Private-Key). \*Note: If using metamask, you'll have to add a `0x` to the start of your private key)
 
 ## Quickstart (Kovan)
 
-We can see our flash loans on Etherscan via the Kovan testnet. If you're rather *run everything locally, check out the [Basic Console Use](#basic-console-use).
+We can see our flash loans on Etherscan via the Kovan testnet. If you're rather \*run everything locally, check out the [Basic Console Use](#basic-console-use).
 
-1. Get some WETH. We need this to pay the preimum that flash loans cost. 
+1. Get some WETH. We need this to pay the preimum that flash loans cost.
 
 ```bash
 $ brownie run scripts/get_weth.py --network kovan
 ```
 
-2. Deploy the flash loan contract. This will also fund the contract with WETH to pay the flash loan fee if it's not funded. 
+2. Deploy the flash loan contract. This will also fund the contract with WETH to pay the flash loan fee if it's not funded.
 
 ```bash
 $ brownie run scripts/deployment_v2.py --network kovan
 ```
 
-3. Execute the flash loan 
+3. Execute the flash loan
 
 ```bash
 $ brownie run scripts/run_flash_loan_v2.py --network kovan
@@ -111,8 +119,8 @@ Transaction sent: 0x335530e6d2b7588ee4727b35ae1ed8634a264aca04b325640101ec1c2b89
 
 [`contracts/v2/FlashloanV2.sol`](contracts/v2/FlashloanV2.sol) is where you implement your own logic for flash loans. In particular:
 
-* The size of the loan is set in line 89 in `flashloan`.
-* Custom flash loan logic is added after line 31 in `executeOperation`.
+- The size of the loan is set in line 89 in `flashloan`.
+- Custom flash loan logic is added after line 31 in `executeOperation`.
 
 See the Aave documentation on [Performing a Flash Loan](https://docs.aave.com/developers/guides/flash-loans) for more detailed information.
 
@@ -154,20 +162,20 @@ Traceback for '0x7af1ce1c30de8b939f481fd6c340226415428f7e6b59e09d7fa538393909182
 
 
 Trace step 13656, program counter 6555:
-  File "contracts/protocol/lendingpool/LendingPool.sol", lines 532-536, in LendingPool.flashLoan:    
+  File "contracts/protocol/lendingpool/LendingPool.sol", lines 532-536, in LendingPool.flashLoan:
     IERC20(vars.currentAsset).safeTransferFrom(
       receiverAddress,
       vars.currentATokenAddress,
       vars.currentAmountPlusPremium
     );
 Trace step 13750, program counter 11619:
-  File "contracts/dependencies/openzeppelin/contracts/SafeERC20.sol", line 36, in SafeERC20.safeTransferFrom:    
+  File "contracts/dependencies/openzeppelin/contracts/SafeERC20.sol", line 36, in SafeERC20.safeTransferFrom:
     callOptionalReturn(token, abi.encodeWithSelector(token.transferFrom.selector, from, to, value));
 Trace step 13937, program counter 16308:
-  File "contracts/dependencies/openzeppelin/contracts/SafeERC20.sol", line 55, in SafeERC20.callOptionalReturn:    
+  File "contracts/dependencies/openzeppelin/contracts/SafeERC20.sol", line 55, in SafeERC20.callOptionalReturn:
     (bool success, bytes memory returndata) = address(token).call(data);
 Trace step 13937, program counter 16308:
-  File "contracts/dependencies/openzeppelin/contracts/SafeERC20.sol", line 55, in SafeERC20.callOptionalReturn:    
+  File "contracts/dependencies/openzeppelin/contracts/SafeERC20.sol", line 55, in SafeERC20.callOptionalReturn:
     (bool success, bytes memory returndata) = address(token).call(data);
 ```
 
@@ -298,6 +306,6 @@ See our [Troubleshooting Errors](https://docs.aave.com/developers/tutorials/trou
 
 # Resources
 
- - Aave [flash loan documentation](https://docs.aave.com/developers/guides/flash-loans)
- - Aave [Developer Discord channel](https://discord.gg/CJm5Jt3)
- - Brownie [Gitter channel](https://gitter.im/eth-brownie/community)
+- Aave [flash loan documentation](https://docs.aave.com/developers/guides/flash-loans)
+- Aave [Developer Discord channel](https://discord.gg/CJm5Jt3)
+- Brownie [Gitter channel](https://gitter.im/eth-brownie/community)
