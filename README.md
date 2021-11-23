@@ -1,6 +1,6 @@
 # Polygon Flashloan Fork Strategy
 
-This flashloan takes advantage of forking the Polygon mainnet at at the current block, performing arbitrage, and if a profitable opportunity is found, the strategy will switch back to mainnet and execute a real flashloan.
+This flashloan strategy takes advantage of forking the Polygon mainnet at at the current block, performing arbitrage, and if a profitable opportunity is found, the strategy will switch back to mainnet and execute a real flashloan.
 
 This means finding and executing arbitrage opportunities can be very easy and cheap, as all of the brute force testing is done on a simulated network and the cost to execute flashloans on Polygon is very cheap
 
