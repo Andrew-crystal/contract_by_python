@@ -1,6 +1,5 @@
 from brownie import FlashloanV2, accounts, config, network, interface, Contract
 from web3 import Web3
-from scripts.tokens import tokens, curve_tokens
 
 def main():
     lending_pool = "0xd05e3E715d945B59290df0ae8eF85c1BdB684744"

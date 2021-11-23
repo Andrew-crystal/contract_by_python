@@ -13,16 +13,14 @@ AMOUNT_ETH = 2
 AMOUNT_BTC = 0.1
 
 def main():
-    if 'fork' in network.show_active():
-        acct = accounts[0]
+    if 'fork' not in network.show_active():
+        acct = connect_fork()
         flashloan = FlashloanV2.deploy(
             LENDING_POOL,
             {"from": acct}
     )
-    else:
-        acct = accounts.add(config['wallets']['from_key'])
-        flashloan_addr = input('Enter deployed flashloan address')
-        flashloan = Contract(flashloan_addr)
+    flashloan_addr = input('Enter deployed flashloan address')
+    
 
     approve_all()
     token_names = ['dai', 'usdc', 'usdt', 'wbtc', 'weth']
@@ -32,6 +30,8 @@ def main():
         profitable, from_token, to_token, amount =  test_arb(*pair)
 
         if profitable:
+            acct = connect_mainnet()
+            flashloan = Contract(flashloan_addr)
             flashloan.setTokens(
             from_token,
             curve_tokens[from_token],
@@ -41,6 +41,7 @@ def main():
             )
             flashloan.flashloan(amount, {"from": acct})
             flashloan.getProfit(from_token, {'from': acct})
+            acct = connect_fork()
 
 
 def test_arb(from_token, to_token):
@@ -75,6 +76,15 @@ def test_arb(from_token, to_token):
     return (False, from_address, to_address, amount)
  
    
+def connect_mainnet():
+    network.disconnect()
+    network.connect('polygon-main')
+    return accounts.add(config['wallets']['from_key'])
+
+def connect_fork():
+    network.disconnect()
+    network.connect('polygon-main-fork')
+    return accounts[0]
 
 def approve_all():
     for token in [tokens[token] for token in tokens.keys() if token != 'wmatic']:
